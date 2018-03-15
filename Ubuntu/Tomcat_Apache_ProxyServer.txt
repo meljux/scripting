@@ -1,0 +1,63 @@
+REVISAR: https://www.digitalocean.com/community/tutorials/how-to-install-apache-tomcat-8-on-ubuntu-14-04
+-------------------------APACHE
+sudo apt-get install apache2
+sudo a2dismod autoindex
+service apache2 restart
+sudo apt-get install ufw
+sudo ufw allow http
+sudo ufw allow 6669
+sudo ufw enable
+curl http://localhost/
+-------------------------JAVA
+sudo apt-get install python-software-properties
+sudo apt-get purge openjdk*
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+java -version
+sudo apt-get install oracle-java8-set-default
+-------------------------TOMCAT
+sudo apt-get install tomcat7 tomcat7-docs tomcat7-admin tomcat7-examples
+sudo vi /etc/default/tomcat7
+	SetJAVA_HOME=/usr/lib/jvm/java-8-oracle
+sudo service tomcat7 start
+curl http://localhost:8080/
+-------------------------Configuring httpd with Tomcat7
+sudo vi /etc/tomcat7/server.xml
+	<Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+sudo service tomcat7 restart
+sudo a2enmod proxy proxy_ajp
+service apache2 restart
+sudo vi /etc/apache2/sites-available/F00B4R-tomcat7.conf
+
+     <VirtualHost *:80>
+          # this will forward the requests to /my-app to tomcat7
+          ProxyPass /my-app ajp://localhost:8009/my-app  
+          ProxyPassReverse /my-app ajp://localhost:8009/my-app  
+          # this will pass all the requests from httpd to tomcat7
+          ProxyPass / ajp://localhost:8009/ 
+          ProxyPassReverse / ajp://localhost:8009/  
+     </VirtualHost *:80>
+
+cd /etc/apache2/sites-enabled
+sudo rm 000-default.conf
+sudo ln -s /etc/apache2/sites-available/F00B4R-tomcat7.conf 000-default.conf
+LOCATE THE TOMCAT'S EXAMPLES AND SET THE CORRECT PATH IN VIRTUALHOST:
+cd /usr/share/tomcat7-examples
+sudo cp -r examples /var/lib/tomcat7/webapps/ROOT/
+sudo vi /etc/apache2/sites-available/F00B4R-tomcat7.conf
+
+<VirtualHost *:80>
+          # this will forward the requests to /my-app to tomcat7
+          ProxyPass /examples ajp://localhost:8009/examples
+          ProxyPassReverse /examples ajp://localhost:8009/examples
+          # this will pass all the requests from httpd to tomcat7
+          ProxyPass / ajp://localhost:8009/
+          ProxyPassReverse / ajp://localhost:8009/
+</VirtualHost>
+
+sudo service apache2 restart
+
+TEST in BROWSER:
+
+curl 
