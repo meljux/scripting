@@ -1,0 +1,14 @@
+ufw reset
+ufw allow git
+ufw allow out http
+ufw allow in http
+ufw allow out https
+ufw allow in https
+ufw allow out 53
+ufw logging on
+ufw default deny incoming
+ufw default deny outgoing
+ufw limit ssh
+ufw enable
+
+sudo ufw allow out 6669
